@@ -27,22 +27,18 @@ boolean routed = false;
 void setup() {
   size(1000, 500);
   background(BACKGROUND_COLOR);
-  
+
   int mazeWidth = floor(width/CELL_SIZE) > 1 ? floor(width/CELL_SIZE) : 2;
   int mazeHeight = floor(height/CELL_SIZE) > 1? floor(height/CELL_SIZE) : 2;
-  
+
   maze = new Maze(mazeWidth, mazeHeight, CELL_SIZE);
   solver = new Solver(maze, maze.board[0][0], maze.board[maze.height-1][maze.width-1]);
-  
-  for(int i = 0; i < 15; i++){
-    delay(1000); 
-  }
 }
 
 void draw() {
-  if(!finished){
-    if(!routed){
-      if(!generated){      
+  if (!finished) {
+    if (!routed) {
+      if (!generated) {      
         maze.generate();
       } else {
         delay(1000);
@@ -51,11 +47,11 @@ void draw() {
     } else {
       solver.drawEntry();
       solver.drawTrace();
-      if(solver.path.empty()){
+      if (solver.path.empty()) {
         solver.drawExit();
         println("");
         println("");
-        
+
         println("====================");
         println("FINISHED!");
         println("====================");
