@@ -1,17 +1,20 @@
 /* Solver class //<>//
  
- maze: the maze this solver has to solve...
+ maze: the maze instance this solver has to solve...
  
- start: the starting cell for the solving path
- finish: the finishing cell for the solving path
- currentCell: the current cell in the solving path
- nextCell: the cell that is next in the solving path
+ start: starting cell for the solving path
+ finish: finishing cell for the solving path
+ currentCell: current cell in the solving path
+ nextCell: cell that is next in the solving path
  
  path: stack to track the cells the solver has visited
  
  heading: direction where the solver is headed to
  rightHand: direction where the solver's right hand is pointing to
  
+ solve(): solves the maze to find the path between the start and finish cells
+ canPass(): if the solver can pass to the next cell by going the direction it is heading
+ isHandOnWall(): if the solver has a wall to its right
  **/
 
 class Solver {
@@ -38,17 +41,13 @@ class Solver {
   }
 
   void solve() {
-    println("");
-    println("");
 
     do {
       currentCell = (currentCell == null) ? start : nextCell;
 
       int index = path.search(currentCell);
 
-      println("-----==========-----");
-      println("Current Cell: [ " + currentCell.line + " , " + currentCell.col + " ]");
-      println("Index: " + index);
+      console.printSolverCurrentCell(currentCell, index);
 
       if (index == -1) {
         path.push(currentCell);
@@ -56,10 +55,7 @@ class Solver {
         path.pop();
       }
 
-      println("Heading: " + heading);
-      println("Right Hand: " + rightHand);
-      println("Can pass? " + canPass());
-      println("Is Hand on Wall? " + isHandOnWall());
+      console.printSolverPath(heading, rightHand, canPass(), isHandOnWall());
 
       do {        
 
@@ -72,29 +68,16 @@ class Solver {
           heading = rightHand;
           rightHand = Direction.getRight(rightHand);
         }
-        println("Heading: " + heading);
-        println("Right Hand: " + rightHand);
-        println("Can pass? " + canPass());
-        println("Is Hand on Wall? " + isHandOnWall());
+        console.printSolverPath(heading, rightHand, canPass(), isHandOnWall());
       } while (!canPass());
 
       nextCell = currentCell.neighbors.get(heading);
-
-      println("Next Cell: [ " + nextCell.line + " , " + nextCell.col + " ]");
+      console.printNextCell(nextCell);
     } while (nextCell != finish);   
 
-    println("====================");
-    println("FOUND PATH!");
-    println("====================");
+    console.printRouted();
 
-    println("");
-    println("");
-
-    println("====================");
-    println("DRAWING ROUTE...");
-    println("====================");
-
-    routed = true;
+    maze.solved = true;
   }
 
   boolean canPass() {
@@ -103,29 +86,5 @@ class Solver {
 
   boolean isHandOnWall() {
     return currentCell.walls.containsKey(Direction.getRight(heading));
-  }
-
-  void drawEntry() {
-    Cell entry = finish;
-
-    stroke(ENTRY_COLOR);
-    fill(ENTRY_COLOR);
-    square((entry.col*entry.size) + ENTRY_OFFSET, (entry.line*entry.size) + ENTRY_OFFSET, entry.size - (ENTRY_OFFSET*2));
-  }
-
-  void drawExit() {
-    Cell exit = start;
-
-    stroke(EXIT_COLOR);
-    fill(EXIT_COLOR);
-    square((exit.col*exit.size) + ENTRY_OFFSET, (exit.line*exit.size) + ENTRY_OFFSET, exit.size - (ENTRY_OFFSET*2));
-  }
-
-  void drawTrace() {
-    Cell traceCell = path.pop();
-
-    stroke(TRACE_COLOR);
-    fill(TRACE_COLOR);
-    square(traceCell.col*traceCell.size + ((traceCell.size/2) - int(traceCell.size*(TRACE_PERCENTAGE/2))), traceCell.line*traceCell.size + ((traceCell.size/2) - int(traceCell.size*(TRACE_PERCENTAGE/2))), traceCell.size - (traceCell.size - int(traceCell.size*TRACE_PERCENTAGE)));
   }
 }

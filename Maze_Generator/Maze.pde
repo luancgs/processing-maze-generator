@@ -2,28 +2,41 @@
  
  width: number of columns in the maze matrix
  height: number of lines in the maze matrix
- cellSize: how many pixels has a cell side
- board: maze matrix with all the cells
- path: stack to track the cells the generator has visited
+ cells: maze matrix with all the cells
+ path: stack to track which cells the generator has visited
+ 
+ currentCell: which cell the generator is currently in
+ nextCell: which cell the generator is going in the next iteration
+ 
+ generated: if the maze has been totally generated
+ solved: if the maze has been solved
+ 
+ createCells(): populates the cells matrix
+ createNeighbors(): adds the neighbors to all cells
+ getFirstCell(): randomly selects a cell to start the maze generation
+ generate(): starts the maze generation
+ checkUnvisitedNeighbor(): checks if the current cell has any unvisited neighbor
+ getNextCell(): selects the next cell to go from the current cell's neighbors
  
  **/
 
 class Maze {
   int width;
   int height;
-  int cellSize;
-  Cell[][] board;
+  Cell[][] cells;
   Stack<Cell> path;
 
-  Cell currentCell;
-  Cell nextCell;
+  private Cell currentCell;
+  private Cell nextCell;
 
-  Maze(int w, int h, int cSize) {
+  boolean generated = false;
+  boolean solved = false;
+
+  Maze(int w, int h) {
     this.width = w;
     this.height = h;
-    cellSize = cSize;
 
-    board = new Cell[this.height][this.width];
+    cells = new Cell[this.height][this.width];
     path = new Stack();
 
     currentCell = null;
@@ -32,29 +45,29 @@ class Maze {
     createCells();
   }
 
-  void createCells() {
+  private void createCells() {
     for (int i = 0; i < this.height; i++) {
       for (int j = 0; j < this.width; j++) {
-        board[i][j] = new Cell(i, j, cellSize, this);
+        cells[i][j] = new Cell(i, j, this);
       }
     }
 
     createNeighbors();
   }
 
-  void createNeighbors() {
+  private void createNeighbors() {
     for (int i = 0; i < this.height; i++) {
       for (int j = 0; j < this.width; j++) {
-        board[i][j].addNeighbors();
+        cells[i][j].addNeighbors();
       }
     }
   }
 
-  Cell getFirstCell() {
+  private Cell getFirstCell() {
     int cellLine = int(random(this.height));
     int cellCol = int(random(this.width));
 
-    return board[cellLine][cellCol];
+    return cells[cellLine][cellCol];
   }
 
   void generate() {
@@ -67,34 +80,32 @@ class Maze {
     }
   }
 
-  boolean checkUnvisitedNeighbor() {
-    println("-----==========-----");
+  private boolean checkUnvisitedNeighbor() {
+    console.printSeparator();
     boolean noUnvisitedNeighbor = true;
 
     do {
-      currentCell = (nextCell == null) ? maze.getFirstCell() : nextCell;
+      currentCell = (currentCell == null) ? maze.getFirstCell() : nextCell;
       currentCell.visited = true;
-
-      println("Current Cell: [ " + currentCell.line + " , " + currentCell.col + " ]");
+      console.printCurrentCell(currentCell);
 
       for (Map.Entry<Direction, Cell> entry : currentCell.neighbors.entrySet()) {
         Cell neighbor = entry.getValue();
 
         if (neighbor.visited == false) {
           noUnvisitedNeighbor = false;
+          break;
         }
       }
 
       if (noUnvisitedNeighbor) {
         if (path.empty()) {
           generated = true;
-          println("====================");
-          println("MAZE GENERATED!");
-          println("====================");
+          console.printGenerated();
           break;
         }
         nextCell = maze.path.pop();
-        println("No unvisited neighbor. Going back to [ " + nextCell.line + " , " + nextCell.col + " ]");
+        console.printGoingBack(nextCell);
         break;
       }
     } while (noUnvisitedNeighbor);
@@ -102,7 +113,7 @@ class Maze {
     return !noUnvisitedNeighbor;
   }
 
-  void getNextCell() {
+  private void getNextCell() {
     Direction direction;
     boolean foundDirection = false;
 
@@ -121,8 +132,7 @@ class Maze {
             currentCell.destroyWall(direction);
             nextCell.destroyWall(Direction.opposite(direction));
 
-            println("Next Cell: [ " + nextCell.line + " , " + nextCell.col + " ]");
-            println("Destroy Wall: " + direction);
+            console.printGoingFoward(nextCell, direction);
             break;
           }
         }
